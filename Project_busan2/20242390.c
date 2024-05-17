@@ -49,18 +49,23 @@ void printIntro() {
 }
 
 void trainSetting() {
-	printf("train length(%d %d)>> ", LEN_MIN, LEN_MAX);
-	scanf_s("%d", &train_len);
-	printf("percentile probability 'p'(%d %d)>> ", PROB_MIN, PROB_MAX);
-	scanf_s("%d", &percent);
-	printf("\n");
-    if (train_len < 15 || train_len > 50 || percent < 10 || percent > 90) {
-        printf("잘못된 입력으로 프로그램을 종료합니다.\n");
-        return 0;
-    }
-    // 'C,Z'의 초기 위치
-    int cPosition = train_len - 6;
-    int zPosition = train_len - 3;
+    do {
+        printf("train length(%d~%d)>> ", LEN_MIN, LEN_MAX);
+        scanf_s("%d", &train_len);
+    } while (train_len < LEN_MIN || train_len > LEN_MAX);
+    do {
+        printf("madongseok stamina(%d~%d)>> ", STM_MIN, STM_MAX);
+        scanf_s("%d", &stamina);
+    } while (stamina < STM_MIN || stamina > STM_MAX);
+    do {
+        printf("percentile probability 'p'(%d~%d)>> ", PROB_MIN, PROB_MAX);
+        scanf_s("%d", &percent);
+    } while (percent < PROB_MIN || percent > PROB_MAX);
+    printf("\n");
+
+    cPosition = train_len - 6;
+    zPosition = train_len - 3;
+    mPosition = train_len - 2;
 }
 
 void percentage() {
