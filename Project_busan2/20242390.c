@@ -125,10 +125,12 @@ void train_situation() {
 void citizen_movement() {
     printf("\n\n");
     if (cMoved) {
-        printf("citizen: %d -> %d\n", cPosition + 1, cPosition);
+        if (citizen_aggro < AGGRO_MAX) citizen_aggro++;
+        printf("citizen: %d -> %d (aggro: %d -> %d)\n", cPosition + 1, cPosition, citizen_aggro - 1, citizen_aggro);
     }
     else {
-        printf("citizen: stay %d\n", cPosition);
+        if (citizen_aggro > AGGRO_MIN) citizen_aggro--;
+        printf("citizen: stay %d (aggro: %d -> %d)\n", cPosition, citizen_aggro + 1, citizen_aggro);
     }
 }
 
