@@ -38,6 +38,7 @@ bool zMoved = false;
 bool cannotMoved = false;
 int zombieCount = 0; //좀비가 2턴마다 움직이게 하는 변수
 int moveSelect; // 마동석 움직임 고르기 0,1
+int turn = 0; //페이즈
 // 어그로 변수
 int citizen_aggro = 1;
 int madongseok_aggro = 1;
@@ -74,18 +75,15 @@ void percentage() {
     // 입력 받은 확률로 cPosition-- or zPosition--
     zombieCount += 1; // 게속 1식 올라가면서 zombieCount가 홀수일 때만 Z가 이동(zPosition--)
     if (zombieCount % 2 == 1) {
-        if (randomNum <= percent) {
-            zPosition--;
-            zMoved = true;
-        }
-        else zMoved = false;
+        //zPosition--;
+        zMoved = true;
     }
     else { //zombieCount가 짝수이면 Z는 움직이지 않고 cannot move
         zMoved = false;
         cannotMoved = true;
     }
     if (randomNum <= 100 - percent) { //100-p 확률
-        cPosition--;
+        //cPosition--;
         cMoved = true;
     }
     else cMoved = false;
@@ -122,15 +120,34 @@ void train_situation() {
     }
     printf("\n");
 }
-
+void aggro() {
+    if (cMoved) {
+        cPosition--;
+        if (citizen_aggro < AGGRO_MAX) citizen_aggro++;
+    }
+    else {
+        if (citizen_aggro > AGGRO_MIN) citizen_aggro--;
+    }
+    if (zMoved) {
+        if (citizen_aggro >= madongseok_aggro) {
+            if(zPosition - 1 != cPosition)  zPosition--;
+        }
+        else {
+            if (mPosition - 1 != zPosition) {
+                zPosition++;
+            }
+            else zMoved = false;
+        }
+    }
+}
 void citizen_movement() {
     printf("\n\n");
     if (cMoved) { //시민이 움직이면
-        if (citizen_aggro < AGGRO_MAX) citizen_aggro++; //시민 어그로가 5보다 작으면 어그로 + 1
+        //if (citizen_aggro < AGGRO_MAX) citizen_aggro++; //시민 어그로가 5보다 작으면 어그로 + 1
         printf("citizen: %d -> %d (aggro: %d -> %d)\n", cPosition + 1, cPosition, citizen_aggro - 1, citizen_aggro);
     }
     else { //움직이지 않으면
-        if (citizen_aggro > AGGRO_MIN) citizen_aggro--; //시민 어그로가 0보다 크면 어그로 - 1
+        //if (citizen_aggro > AGGRO_MIN) citizen_aggro--; //시민 어그로가 0보다 크면 어그로 - 1
         printf("citizen: stay %d (aggro: %d -> %d)\n", cPosition, citizen_aggro + 1, citizen_aggro);
     }
 }
@@ -146,6 +163,32 @@ void zombie_movement() {
         printf("zombie: stay %d\n", zPosition);
     }
 }
+
+void madongseok_input() {
+    printf("\n");
+    if (mPosition - 1 == zPosition) { // 마동석이 좀비와 인접해 있으면
+        do {
+            printf("madongseok move(%d:stay)>> ", MOVE_STAY); //대기만 가능
+            scanf_s("%d", &moveSelect);
+        } while (moveSelect != MOVE_STAY);
+    }
+    else { //인접해 있지 않으면
+        do {
+            printf("madongseok move(%d:stay, %d:left)>> ", MOVE_STAY, MOVE_LEFT); //왼쪽 이동 or 대기 선택 가능
+            scanf_s("%d", &moveSelect);
+        } while (moveSelect < MOVE_STAY || moveSelect > MOVE_LEFT);
+    }
+}
+void madongseok_movement() {
+    if (moveSelect == MOVE_LEFT) { // 왼쪽 이동을 고르면 왼쪽으로 이동하고
+        mPosition--;
+        if (madongseok_aggro < AGGRO_MAX) madongseok_aggro++; // 왼쪽 이동 -> 어그로 + 1
+    }
+    else { //아니면 대기
+        if (madongseok_aggro > AGGRO_MIN) madongseok_aggro--; // 대기 -> 어그로 - 1
+    }
+}
+
 bool printStatus() {
     // C가 끝에 도착하면 탈출 성공 출력 후 프로그램 종료
     if (cPosition == 1) { // 끝이 1
@@ -161,31 +204,6 @@ bool printStatus() {
     }
     return false;
 }
-void madongseok_scanfMove() {
-    printf("\n");
-    if (mPosition - 1 == zPosition) { // 마동석이 좀비와 인접해 있으면
-        do {
-            printf("madongseok move(%d:stay)>> ", MOVE_STAY); //대기만 가능
-            scanf_s("%d", &moveSelect);
-        } while (moveSelect != MOVE_STAY);
-        return moveSelect;
-    }
-    else { //인접해 있지 않으면
-        do {
-            printf("madongseok move(%d:stay, %d:left)>> ", MOVE_STAY, MOVE_LEFT); //왼쪽 이동 or 대기 선택 가능
-            scanf_s("%d", &moveSelect);
-        } while (moveSelect < MOVE_STAY || moveSelect > MOVE_LEFT);
-        return moveSelect;
-    }
-}
-void madongseok_movement() {
-    if (moveSelect == 1) { // 왼쪽 이동을 고르면 왼쪽으로 이동하고
-        mPosition--;
-    }
-    else { //아니면 대기
-
-    }
-}
 int main(void) {
     srand((unsigned int)time(NULL));
     printIntro();
@@ -199,16 +217,16 @@ int main(void) {
         cannotMoved = false;
 
         percentage();
+        aggro();
         train_situation();
-        {
-            //시민, 좀비 움직임
-            citizen_movement(); 
-            zombie_movement();
-        }
+        
+        citizen_movement(); 
+        zombie_movement();
         {
             //마동석 이동 입력 및 처리
-            madongseok_scanfMove();
+            madongseok_input();
             madongseok_movement();
+            train_situation();
         }
 
         if (printStatus()) {
