@@ -36,12 +36,15 @@ int mPosition;
 bool cMoved = false; // 시민 움직임,좀비 움직임 ,좀비(못움직이는 턴) 움직임
 bool zMoved = false;
 bool cannotMoved = false;
+bool mMoved = false;
 int zombieCount = 0; //좀비가 2턴마다 움직이게 하는 변수
 int moveSelect; // 마동석 움직임 고르기 0,1
 int turn = 0; //페이즈
 // 어그로 변수
 int citizen_aggro = 1;
 int madongseok_aggro = 1;
+
+int rule;
 // 함수 선언
 void printIntro() { 
     printf("======================================\n");
@@ -178,15 +181,31 @@ void madongseok_input() {
             scanf_s("%d", &moveSelect);
         } while (moveSelect < MOVE_STAY || moveSelect > MOVE_LEFT);
     }
+    if (moveSelect == 1) { //마동석 움직이면 
+        mMoved = true;
+    }
+    else mMoved = false;
 }
 void madongseok_movement() {
-    if (moveSelect == MOVE_LEFT) { // 왼쪽 이동을 고르면 왼쪽으로 이동하고
+    if (mMoved) { // 왼쪽 이동을 고르면 왼쪽으로 이동하고
         mPosition--;
         if (madongseok_aggro < AGGRO_MAX) madongseok_aggro++; // 왼쪽 이동 -> 어그로 + 1
     }
     else { //아니면 대기
         if (madongseok_aggro > AGGRO_MIN) madongseok_aggro--; // 대기 -> 어그로 - 1
     }
+}
+void madongseok_result() {
+    if (mMoved) {
+        printf("\nmadongseok: stay %d(aggro: %d -> %d, stamina: %d)", mPosition, madongseok_aggro - 1, madongseok_aggro, stamina);
+    }
+    else {
+        printf("\nmadongseok: stay %d(aggro: %d -> %d, stamina: %d)", mPosition, madongseok_aggro + 1, madongseok_aggro, stamina);
+    }
+}
+void citizen_does_noting() {
+    printf("\n\n");
+    printf("citizen does nothing.\n");
 }
 
 bool printStatus() {
@@ -198,7 +217,7 @@ bool printStatus() {
     }
     // Z가 C바로 옆에 도착하면 구출 실패 출력 후 프로그램 종료
     if (cPosition == zPosition - 1) {
-        printf("\nGAME OVER\n");
+        printf("\nGAME OVER! citizen dead...\n");
         printf("citizen(s) has(have) been attacked by a zombie\n");
         return true;
     }
@@ -215,7 +234,7 @@ int main(void) {
         cMoved = false;
         zMoved = false;
         cannotMoved = false;
-
+        mMoved = false;
         percentage();
         aggro();
         train_situation();
@@ -227,6 +246,7 @@ int main(void) {
             madongseok_input();
             madongseok_movement();
             train_situation();
+            madongseok_result();
         }
 
         if (printStatus()) {
