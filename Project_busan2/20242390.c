@@ -37,6 +37,8 @@ bool cMoved = false; // 시민 움직임,좀비 움직임 ,좀비(못움직이는 턴) 움직임
 bool zMoved = false;
 bool cannotMoved = false;
 bool mMoved = false;
+bool zombie_attcked_madongseok = false;
+bool Z_near_C = false;
 int zombieCount = 0; //좀비가 2턴마다 움직이게 하는 변수
 int moveSelect; // 마동석 움직임 고르기 0,1
 int turn = 0; //페이즈
@@ -207,16 +209,41 @@ void citizen_does_noting() {
     printf("\n\n");
     printf("citizen does nothing.\n");
 }
-
+void zombie_attcked() {
+    zombie_attcked_madongseok = false;
+    Z_near_C = false;
+    if ((cPosition == zPosition - 1) && (zPosition == mPosition - 1)) {
+        if (citizen_aggro > madongseok_aggro) {
+            Z_near_C = true;
+        }
+        else zombie_attcked_madongseok = true;
+    }
+    else if (cPosition == zPosition - 1) {
+        Z_near_C = true;
+    }
+    else if (zPosition == mPosition - 1) {
+        zombie_attcked_madongseok = true;
+    }
+    else {
+        printf("\nzombie attacked nobody.\n");
+    }
+}
+void zombie_attcked_2() { //zombie_attcked_madongseok = true
+    stamina--;
+    printf("Zombie attcked madongseok (aggro: %d vs .%d, madongseok stamina: %d -> %d)\n", citizen_aggro, madongseok_aggro, stamina + 1, stamina);
+    if (stamina == STM_MIN) {
+        printf("GAME OVER!\n");
+        exit(0);
+    }
+}
 bool printStatus() {
     // C가 끝에 도착하면 탈출 성공 출력 후 프로그램 종료
     if (cPosition == 1) { // 끝이 1
-        printf("\nSUCCESS!\n");
-        printf("citizen(s) escaped to the next train\n");
+        printf("\nYOU WIN! citizen(s) escaped to the next train\n");
         return true;
     }
     // Z가 C바로 옆에 도착하면 구출 실패 출력 후 프로그램 종료
-    if (cPosition == zPosition - 1) {
+    if (Z_near_C) {
         printf("\nGAME OVER! citizen dead...\n");
         printf("citizen(s) has(have) been attacked by a zombie\n");
         return true;
@@ -227,7 +254,7 @@ int main(void) {
     srand((unsigned int)time(NULL));
     printIntro();
     trainSetting();
-    //firstTrain();
+
     train_situation();
 
     while (1) {
@@ -248,9 +275,16 @@ int main(void) {
             train_situation();
             madongseok_result();
         }
-
+        if (cPosition != 1) {
+            citizen_does_noting();
+        }
+        zombie_attcked();
+        if (zombie_attcked_madongseok) {
+            zombie_attcked_2();
+        }
         if (printStatus()) {
             break;
         }
+
     }
 }
