@@ -35,6 +35,7 @@ int zPosition;
 int mPosition;
 int before_zPosition; //zposition 변경 전 값
 int before_cPosition; //cposition 변경 전 값
+int before_aggro_C;
 bool cMoved = false; // 시민 움직임,좀비 움직임 ,좀비(못움직이는 턴) 움직임
 bool zMoved = false;
 bool cannotMoved = false;
@@ -142,10 +143,15 @@ void train_situation() {
 }
 //1-5 어그로 세팅
 void aggro() {
+    before_aggro_C = citizen_aggro;
     if (cMoved) {
+
         before_cPosition = cPosition;
         cPosition--;
-        if (citizen_aggro < AGGRO_MAX) citizen_aggro++;
+        if (citizen_aggro < AGGRO_MAX) {
+            citizen_aggro++;
+            if (citizen_aggro >= AGGRO_MAX) citizen_aggro = AGGRO_MAX;
+        }
     }
     else {
         if (citizen_aggro > AGGRO_MIN) citizen_aggro--;
@@ -165,15 +171,15 @@ void aggro() {
 void citizen_movement() {
     printf("\n\n");
     if (cMoved) { //시민이 움직이면
-        printf("citizen: %d -> %d (aggro: %d -> %d)\n", before_cPosition, cPosition, citizen_aggro - 1, citizen_aggro);
+
+        printf("citizen: %d -> %d (aggro: %d -> %d)\n", before_cPosition, cPosition, before_aggro_C, citizen_aggro);
     }
     else { //움직이지 않으면
-        printf("citizen: stay %d (aggro: %d -> %d)\n", cPosition, citizen_aggro + 1, citizen_aggro);
+        printf("citizen: stay %d (aggro: %d -> %d)\n", cPosition, before_aggro_C, citizen_aggro);
     }
 }
 // 1-7 좀비 움직임 세팅
 void zombie_movement() {
-
     if (zMoved && !Pull_cannotMoved) { //움직였을때, Pull_cannotMoved가 아닐때..
         printf("zombie: %d -> %d\n", before_zPosition, zPosition);
     }
@@ -187,7 +193,7 @@ void zombie_movement() {
 // 1-8 마동석 움직임 입력
 void madongseok_input() {
     printf("\n");
-    if (mPosition - 1 == zPosition) { // 마동석이 좀비와 인접해 있으면
+    if (mPosition - 1 == zPosition) { // 마동석이 좀비와 인접해 있으면 
         do {
             printf("madongseok move(%d:stay)>> ", MOVE_STAY); //대기만 가능, 입력 받음
             scanf_s("%d", &moveSelect);
@@ -301,10 +307,10 @@ void madongseok_action() { //마동석 행동
         printf("madongseok: %d (aggro: %d -> %d, stamina: %d)\n", mPosition, madongseok_aggro, AGGRO_MAX, stamina); //어그로 -> 5
         madongseok_aggro = AGGRO_MAX;
     }
-
 }
 // 2-8 마동석 행동 결과 출력
 void madongseok_action_result() {
+    Pull_cannotMoved = false;
     int previous_aggro = madongseok_aggro;
     int randomNum_Pull = rand() % 100; //100 - p 확률로 
     if (actionSelect == ACTION_PULL) { //붙들기
@@ -362,10 +368,10 @@ int main(void) {
         if (zombie_attcked_madongseok) { //좀비가 마동석을 공격하면 
             zombie_attcked_2(); //좀비 공격2 //스테미너 감소
         }
-        else { //아니면
-            madongseok_action(); //마동석 행동
-            madongseok_action_result(); //마동석 결과
-        }
+        //아니면
+        madongseok_action(); //마동석 행동
+        madongseok_action_result(); //마동석 결과
+        
         gameover(); //게임 끝
         if (printStatus()) { //게임 끝
             break;
