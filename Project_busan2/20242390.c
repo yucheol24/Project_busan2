@@ -33,6 +33,8 @@ int stamina; //스테미너
 int cPosition; // 'C,Z,M'의 초기 위치
 int zPosition;
 int mPosition;
+int before_zPosition; //zposition 변경 전 값
+int before_cPosition; //cposition 변경 전 값
 bool cMoved = false; // 시민 움직임,좀비 움직임 ,좀비(못움직이는 턴) 움직임
 bool zMoved = false;
 bool cannotMoved = false;
@@ -52,9 +54,20 @@ int madongseok_aggro = 1;
 
 // 1-1 함수 선언
 void printIntro() { 
-    printf("======================================\n");
-    printf("=              부산헹                =\n");
-    printf("======================================\n");
+    printf("========================================\n");
+    printf("|                                      |\n");
+    printf("|              부산행                  |\n");
+    printf("|                                      |\n");
+    printf("========================================\n");
+    printf("        _____                          \n");
+    printf("   ___|[ ]|___                        \n");
+    printf("  |          |                        \n");
+    printf("  |    ___   |                        \n");
+    printf(" _|___|___|__|____                    \n");
+    printf("|_________________|____               \n");
+    printf("   O           O      O               \n");
+    printf("========================================\n");
+
     Sleep(2000);
 }
 // 1-2 기차세팅
@@ -83,7 +96,6 @@ void percentage() {
     // 입력 받은 확률로 cPosition-- or zPosition--
     zombieCount += 1; // 게속 1식 올라가면서 zombieCount가 홀수일 때만 Z가 이동(zPosition--)
     if (zombieCount % 2 == 1) {
-        //zPosition--;
         zMoved = true;
     }
     else { //zombieCount가 짝수이면 Z는 움직이지 않고 cannot move
@@ -131,19 +143,21 @@ void train_situation() {
 //1-5 어그로 세팅
 void aggro() {
     if (cMoved) {
+        before_cPosition = cPosition;
         cPosition--;
         if (citizen_aggro < AGGRO_MAX) citizen_aggro++;
     }
     else {
         if (citizen_aggro > AGGRO_MIN) citizen_aggro--;
     }
+
     if (zMoved) {
-        if (citizen_aggro >= madongseok_aggro) {
-            if(zPosition - 1 != cPosition) zPosition--;
-            //zmoved_citizen = true; 좀비 이동 위치 .. -> .. 고쳐야 함
+        before_zPosition = zPosition; // zposition 변경 전 값
+        if (citizen_aggro >= madongseok_aggro) { //시민어그로가 마동석어그로보다 크거나 같으면
+            if(zPosition - 1 != cPosition) zPosition--; //좀비가 시민이랑 인접해 있지 않으면 감소, 즉 인접해 있으면 좀비는 왼쪽으로 움직이지 않음
         }
-        else {
-            if (zPosition + 1 != mPosition) zPosition++;
+        else { //시민어그로가 마동석어그로보다 작으면,
+            if (zPosition + 1 != mPosition) zPosition++; //  좀비가 마동석이랑 인접해 있지 않으면z++, 즉 인접해 있으면 오른쪽으로 움직이지 않음
         }
     }
 }
@@ -151,22 +165,17 @@ void aggro() {
 void citizen_movement() {
     printf("\n\n");
     if (cMoved) { //시민이 움직이면
-        //if (citizen_aggro < AGGRO_MAX) citizen_aggro++; //시민 어그로가 5보다 작으면 어그로 + 1
-        printf("citizen: %d -> %d (aggro: %d -> %d)\n", cPosition + 1, cPosition, citizen_aggro - 1, citizen_aggro);
+        printf("citizen: %d -> %d (aggro: %d -> %d)\n", before_cPosition, cPosition, citizen_aggro - 1, citizen_aggro);
     }
     else { //움직이지 않으면
-        //if (citizen_aggro > AGGRO_MIN) citizen_aggro--; //시민 어그로가 0보다 크면 어그로 - 1
         printf("citizen: stay %d (aggro: %d -> %d)\n", cPosition, citizen_aggro + 1, citizen_aggro);
     }
 }
 // 1-7 좀비 움직임 세팅
 void zombie_movement() {
+
     if (zMoved && !Pull_cannotMoved) { //움직였을때, Pull_cannotMoved가 아닐때..
-        //if (zmoved_citizen) {
-        //    printf("zombie: %d -> %d\n", zPosition + 1, zPosition);
-        //}
-        //else printf("zombie: %d -> %d\n", zPosition - 1, zPosition);
-        printf("zombie: %d -> %d\n", zPosition + 1, zPosition);
+        printf("zombie: %d -> %d\n", before_zPosition, zPosition);
     }
     else if (cannotMoved || Pull_cannotMoved) { //움직이지 않는 턴이거나 마동석 붙잡임으로 움직이지 못할 때
         printf("zombie: stay %d (cannot move)\n", zPosition);
