@@ -80,7 +80,6 @@ void trainSetting() {
         scanf_s("%d", &percent);
     } while (percent < PROB_MIN || percent > PROB_MAX);
     printf("\n");
-    
     cPosition = train_len - 6; //초기위치 설정
     zPosition = train_len - 3;
     mPosition = train_len - 2;
@@ -111,7 +110,6 @@ void train_situation() {
         printf("#");
     }
     printf("\n#");
-
     // 열차 내부
     for (int i = 1; i < train_len - 1; i++) { //열차길이 - 1 만큼 반복
         if (i == cPosition) { //초기 cPosition은 train_len - 6, cPosition이 감소하면 그 위치에 문자출력 
@@ -139,7 +137,6 @@ void train_situation() {
 void aggro() {
     before_aggro_C = citizen_aggro;
     if (cMoved) {
-
         before_cPosition = cPosition;
         cPosition--;
         if (citizen_aggro < AGGRO_MAX) {
@@ -293,7 +290,6 @@ void madongseok_action() { //마동석 행동
             scanf_s("%d", &actionSelect);
         } while (actionSelect != ACTION_REST && actionSelect != ACTION_PROVOKE && actionSelect != ACTION_PULL);
     }
-
     if (actionSelect == ACTION_REST) { //쉬기
         if(madongseok_aggro > AGGRO_MIN) madongseok_aggro--;  //마동석 어그로 -1
         before_stamina = stamina; // 전 값
