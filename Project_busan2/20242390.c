@@ -61,7 +61,7 @@ void printIntro() {
     printf("  |    ___   |                        \n");
     printf(" _|___|___|__|____                    \n");
     printf("|_________________|____               \n");
-    printf("   O           O      O               \n");
+    printf(" 0----0----0----O----0----O               \n");
     printf("========================================\n");
     Sleep(2000);
 }
@@ -90,7 +90,7 @@ void percentage() {
     int randomNum = rand() % 100; // 1에서 100까지의 난수 생성
     // 입력 받은 확률로 cPosition-- or zPosition--
     zombieCount += 1; // 게속 1식 올라가면서 zombieCount가 홀수일 때만 Z가 이동(zPosition--)
-    if (zombieCount % 2 == 1) {
+    if (zombieCount % 2 == 1 && !Pull_cannotMoved) {
         zMoved = true;
     }
     else { //zombieCount가 짝수이면 Z는 움직이지 않고 cannot move
